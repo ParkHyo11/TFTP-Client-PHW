@@ -7,23 +7,17 @@ import argparse
 from struct import pack
 import os
 
-# ===============================
 # 기본 설정값 정의
-# ===============================
 DEFAULT_PORT = 69                 # TFTP 기본 포트
 BLOCK_SIZE = 512                  # TFTP 데이터 블록 크기
 DEFAULT_TRANSFER_MODE = 'octet'   # 바이너리 전송 모드
 
-# ===============================
 # TFTP 프로토콜 Opcode 정의
-# ===============================
 OPCODE = {'RRQ': 1, 'WRQ': 2, 'DATA': 3, 'ACK': 4, 'ERROR': 5}
 
 MODE = {'netascii': 1,'octet': 2, 'mail': 3}
 
-# ===============================
 # TFTP 오류 코드 정의
-# ===============================
 ERROR_CODE = {
     0: "Not defined, see error message (if any).",
     1: "File not found.",
@@ -35,9 +29,7 @@ ERROR_CODE = {
     7: "No such user."
 }
 
-# ===============================
 # WRQ (Write Request) 전송 함수
-# ===============================
 def send_wrq(filename, mode):
     # WRQ 패킷 포맷: opcode | filename | 0 | mode | 0
     format = f'>h{len(filename)}sB{len(mode)}sB'
@@ -53,9 +45,7 @@ def send_wrq(filename, mode):
     sock.sendto(wrq_message, server_address)
     print(wrq_message)
 
-# ===============================
 # RRQ (Read Request) 전송 함수
-# ===============================
 def send_rrq(filename, mode):
     # RRQ 패킷 포맷: opcode | filename | 0 | mode | 0
     format = f'>h{len(filename)}sB{len(mode)}sB'
@@ -71,9 +61,7 @@ def send_rrq(filename, mode):
     sock.sendto(rrq_message, server_address)
     print(rrq_message)
 
-# ===============================
 # ACK 전송 함수
-# ===============================
 def send_ack(seq_num, server):
     # ACK 패킷 포맷: opcode | block number
     format = f'>hh'
@@ -81,10 +69,8 @@ def send_ack(seq_num, server):
     sock.sendto(ack_message, server)
     print(seq_num)
     print(ack_message)
-
-# ===============================
+    
 # PUT (파일 업로드) 기능
-# ===============================
 def put_file(filename):
     # 업로드할 로컬 파일 존재 여부 확인
     if not os.path.exists(filename):
@@ -148,9 +134,7 @@ def put_file(filename):
             if len(file_block) < BLOCK_SIZE:
                 break
 
-# ===============================
 # 명령행 인자 처리
-# ===============================
 parser = argparse.ArgumentParser(description='mytftp')
 parser.add_argument(dest="host", help="Server IP address", type=str)
 parser.add_argument(dest="operation", help="get or put a file", type=str)
@@ -158,9 +142,7 @@ parser.add_argument(dest="filename", help="name of file to transfer", type=str)
 parser.add_argument("-p", "--port", dest="port", type=int)
 args = parser.parse_args()
 
-# ===============================
 # 서버 정보 및 소켓 생성
-# ===============================
 server_ip = socket.gethostbyname(args.host)
 server_port = args.port if args.port else DEFAULT_PORT
 server_address = (server_ip, server_port)
@@ -173,9 +155,7 @@ mode = DEFAULT_TRANSFER_MODE
 operation = args.operation
 filename = args.filename
 
-# ===============================
 # GET (파일 다운로드) 기능
-# ===============================
 if operation == 'get':
     # RRQ 전송
     send_rrq(filename, mode)
@@ -227,14 +207,10 @@ if operation == 'get':
         # 다음 DATA 수신
         data, server_new_socket = sock.recvfrom(516)
 
-# ===============================
 # PUT 수행
-# ===============================
 elif operation == 'put':
     put_file(filename)
 
-# ===============================
 # 잘못된 명령 처리
-# ===============================
 else:
     print("use get or put")
